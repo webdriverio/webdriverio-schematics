@@ -1,16 +1,24 @@
 {
-  "name": "webdriverio-schematics",
+  "name": "@wdio/schematics",
+  "author": "Christian Bromann <christian@saucelabs.com>",
+  "license": "MIT",
   "version": "0.0.0",
-  "description": "A blank schematics",
+  "description": "WebdriverIO schematics for Angular CLI",
+  "keywords": [
+    "schematics",
+    "webdriverio",
+    "webdriver",
+    "wdio",
+    "e2e",
+    "testing"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "npm run build && jasmine src/**/*_spec.js"
+    "link:sandbox": "npm link && cd sandbox && npm link @briebug/cypress-schematic",
+    "unlink:sandbox": "cd sandbox && npm unlink @briebug/cypress-schematic && cd .. && npm unlink",
+    "test": "npm run build && jasmine src/**/*_spec.js",
+    "watch": "npm run build -- --watch"
   },
-  "keywords": [
-    "schematics"
-  ],
-  "author": "",
-  "license": "MIT",
   "schematics": "./src/collection.json",
   "dependencies": {
     "@angular-devkit/core": "^11.2.4",
@@ -21,5 +29,8 @@
     "@types/node": "^12.11.1",
     "@types/jasmine": "~3.5.0",
     "jasmine": "^3.5.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

@@ -1,9 +1,9 @@
 {
   "$schema": "../node_modules/@angular-devkit/schematics/collection-schema.json",
   "schematics": {
-    "webdriverio-schematics": {
-      "description": "A blank schematic.",
-      "factory": "./webdriverio-schematics/index#webdriverioSchematics"
+    "ng-add": {
+      "description": "Adds WebdriverIO to an existing Angular CLI project.",
+      "factory": "./schematics/index#webdriverioSchematics"
     }
   }
 }
