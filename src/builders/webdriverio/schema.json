@@ -1,0 +1,12 @@
+{
+  "title": "WebdriverIO Target",
+  "description": "WebdriverIO target option for Build Facade",
+  "type": "object",
+  "properties": {
+    "baseUrl": {
+      "type": "string",
+      "description": "Use this to pass directly the address of your distant server address with the port running your application"
+    }
+  },
+  "additionalProperties": true
+}

@@ -14,15 +14,18 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "link:sandbox": "npm link && cd sandbox && npm link @briebug/cypress-schematic",
-    "unlink:sandbox": "cd sandbox && npm unlink @briebug/cypress-schematic && cd .. && npm unlink",
+    "link:sandbox": "npm link && cd sandbox && npm link $npm_package_name",
+    "unlink:sandbox": "cd sandbox && npm unlink $npm_package_name && cd .. && npm unlink",
     "test": "npm run build && jasmine src/**/*_spec.js",
     "watch": "npm run build -- --watch"
   },
-  "schematics": "./src/collection.json",
+  "schematics": "./src/schematics/collection.json",
+  "builders": "./src/builders/builders.json",
   "dependencies": {
+    "@angular-devkit/architect": "^0.1102.4",
     "@angular-devkit/core": "^11.2.4",
     "@angular-devkit/schematics": "^11.2.4",
+    "@wdio/cli": "^7.1.2",
     "typescript": "~4.1.2"
   },
   "devDependencies": {
