@@ -2,9 +2,9 @@
   "$schema": "../../node_modules/@angular-devkit/architect/src/builders-schema.json",
   "builders": {
     "wdio": {
-      "implementation": "./cypress",
-      "schema": "./cypress/schema.json",
-      "description": "Run Cypress tests"
+      "implementation": "./webdriverio",
+      "schema": "./webdriverio/schema.json",
+      "description": "Run WebdriverIO tests"
     }
   }
 }

@@ -3,9 +3,74 @@
   "description": "WebdriverIO target option for Build Facade",
   "type": "object",
   "properties": {
-    "baseUrl": {
+    "configFile": {
       "type": "string",
-      "description": "Use this to pass directly the address of your distant server address with the port running your application"
+      "description": "Path to WebdriverIO config file"
+    },
+    "devServerTarget": {
+      "type": "string",
+      "description": "Dev server target to run tests against."
+    },
+    "watch": {
+      "description": "Run WebdriverIO in watch mode",
+      "type": "boolean",
+      "default": false
+    },
+    "hostname": {
+      "description": "automation driver host address",
+      "type": "string"
+    },
+    "port": {
+      "description": "automation driver port",
+      "type": "number"
+    },
+    "path": {
+      "description": "path to WebDriver endpoints (default \"/\")",
+      "type": "string"
+    },
+    "user": {
+      "description": "username if using a cloud service as automation backend",
+      "type": "string"
+    },
+    "key": {
+      "description": "corresponding access key to the user",
+      "type": "string"
+    },
+    "logLevel": {
+      "description": "level of logging verbosity",
+      "type": "string"
+    },
+    "bail": {
+      "description": "stop test runner after specific amount of tests have failed",
+      "type": "number"
+    },
+    "baseUrl": {
+      "description": "shorten url command calls by setting a base url",
+      "type": "string"
+    },
+    "waitforTimeout": {
+      "description": "timeout for all waitForXXX commands",
+      "type": "number"
+    },
+    "framework": {
+      "description": "defines the framework (Mocha, Jasmine or Cucumber) to run the specs",
+      "type": "string"
+    },
+    "reporters": {
+      "description": "reporters to print out the results on stdout",
+      "type": "array"
+    },
+    "suite": {
+      "description": "overwrites the specs attribute and runs the defined suite",
+      "type": "array"
+    },
+    "spec": {
+      "description": "run only a certain spec file - overrides specs piped from stdin",
+      "type": "array"
+    },
+    "exclude": {
+      "description": "exclude certain spec file from the test run - overrides exclude piped from stdin",
+      "type": "array"
     }
   },
   "additionalProperties": true

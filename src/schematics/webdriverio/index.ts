@@ -131,7 +131,7 @@ function modifyAngularJson(options: any): Rule {
 
         Object.keys(projects).forEach((project) => {
             const wdioConf = {
-                builder: 'wdio/webdriverio-schematic:wdio',
+                builder: '@wdio/schematics:wdio',
                 options: {
                     devServerTarget: `${project}:serve`,
                 },
