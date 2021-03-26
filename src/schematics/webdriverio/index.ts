@@ -1,3 +1,6 @@
+import * as fs from 'fs'
+import * as path from 'path'
+
 import { Rule, SchematicContext, SchematicsException, Tree, chain, noop } from '@angular-devkit/schematics';
 import { NodePackageInstallTask } from '@angular-devkit/schematics/tasks'
 import { map, concatMap } from 'rxjs/operators'
@@ -5,6 +8,7 @@ import { Observable, of, concat } from 'rxjs'
 
 import { handler } from '@wdio/cli/build/commands/config'
 
+import { TS_CONFIG } from './constants'
 import { NodeDependencyType, NodePackage, SchematicsOptions } from './types'
 import {
     getAngularVersion,
@@ -128,21 +132,47 @@ function runWizard(_options: SchematicsOptions): Rule {
                     )
                 )
             )),
-            map((packagesFromRegistry: NodePackage[]) => {
-                for (let packageFromRegistry of packagesFromRegistry) {
-                    const { name, version } = packageFromRegistry
-                    context.logger.debug(`Adding ${name}:${version} to ${NodeDependencyType.Dev}`)
-                    addPackageJsonDependency(tree, {
-                        type: NodeDependencyType.Dev,
-                        name,
-                        version,
-                    })
-                }
-
-                return tree
-            })
+            map(updateFiles(tree, context))
         )
     )
+}
+
+function updateFiles(tree: Tree, context: SchematicContext) {
+    return (packagesFromRegistry: NodePackage[]) => {
+        for (let packageFromRegistry of packagesFromRegistry) {
+            const { name, version } = packageFromRegistry
+            context.logger.debug(`Adding ${name}:${version} to ${NodeDependencyType.Dev}`)
+            addPackageJsonDependency(tree, {
+                type: NodeDependencyType.Dev,
+                name,
+                version,
+            })
+        }
+
+        TS_CONFIG.compilerOptions.types.push(
+            ...packagesFromRegistry
+                .map((pkg) => pkg.name)
+                .filter((pkg) => pkg.startsWith('@wdio'))
+        )
+        fs.writeFileSync(
+            path.join(process.cwd(), 'test', 'tsconfig.e2e.json'),
+            JSON.stringify(TS_CONFIG, null, 4)
+        )
+
+        const wdioConfigPath = path.join(process.cwd(), 'wdio.conf.js')
+        const wdioConfig = fs.readFileSync(wdioConfigPath).toString()
+        fs.writeFileSync(wdioConfigPath, (
+            wdioConfig.slice(0, -4) + '\n' +
+            '    autoCompileOpts: {\n' +
+            '        tsNodeOpts: {\n' +
+            '            transpileOnly: true,\n' +
+            '            project: __dirname + \'/test/tsconfig.e2e.json\'\n' +
+            '        }\n' +
+            '    }\n' +
+            '}\n'
+        ))
+        return tree
+    }
 }
 
 function modifyAngularJson(options: any): Rule {
