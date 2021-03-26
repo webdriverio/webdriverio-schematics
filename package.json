@@ -14,9 +14,16 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "clean": "run-p clean:*",
+    "clean:sandbox": "rm -rf ./sandbox/wdio.conf.js ./sandbox/test",
+    "clean:git": "cd sandbox && git checkout -- .",
     "link:sandbox": "npm link && cd sandbox && npm link $npm_package_name",
     "unlink:sandbox": "cd sandbox && npm unlink $npm_package_name && cd .. && npm unlink",
-    "test": "npm run build && jasmine src/**/*_spec.js",
+    "test": "run-s test:setup test:link test:addSchematic test:link test:runTest clean",
+    "test:setup": "cd sandbox && npm install",
+    "test:link": "run-s link:sandbox",
+    "test:addSchematic": "cd sandbox && npx ng add @wdio/schematics --yes",
+    "test:runTest": "cd sandbox && npx ng run sandbox:wdio-run",
     "watch": "npm run build -- --watch"
   },
   "schematics": "./src/schematics/collection.json",
@@ -32,7 +39,7 @@
   "devDependencies": {
     "@types/jasmine": "~3.5.0",
     "@types/node": "^12.11.1",
-    "jasmine": "^3.5.0"
+    "npm-run-all": "^4.1.5"
   },
   "publishConfig": {
     "access": "public"
