@@ -1,3 +1,5 @@
+import * as path from 'path'
+import * as fs from 'fs'
 import * as url from 'url'
 
 import {
@@ -8,7 +10,7 @@ import {
 } from '@angular-devkit/architect'
 import { JsonObject, json, tags } from '@angular-devkit/core'
 
-import Launcher from '@wdio/cli'
+import type LauncherType  from '@wdio/cli'
 import type { RunCommandArguments } from '@wdio/cli'
 
 export default createBuilder<JsonObject & Options>(execute);
@@ -23,7 +25,7 @@ export async function execute(
     options: Options,
     context: BuilderContext,
 ): Promise<BuilderOutput> {
-    console.log('RUN ME');
+    const Launcher = require(path.join(process.cwd(), 'node_modules', '@wdio', 'cli')).default
 
     // ensure that only one of these options is used
     if (options.devServerTarget && options.baseUrl) {
@@ -73,10 +75,24 @@ export async function execute(
 
     try {
         if (!options.configFile) {
-            throw new Error('missing parameter: --configFile /path/to/wdio.conf.ts')
+            const defaultConfigPath = await Promise.all([
+                path.join(process.cwd(), 'wdio.conf.js'),
+                path.join(process.cwd(), 'wdio.conf.ts')
+            ].map((path: string) => (
+                fs.promises.stat(path).then(
+                    () => path,
+                    () => null
+                )
+            ))).then(((res) => res.find(Boolean)))
+
+            if (!defaultConfigPath) {
+                throw new Error('missing parameter: --configFile /path/to/wdio.conf.ts')
+            }
+
+            options.configFile = defaultConfigPath
         }
 
-        const launcher = new Launcher(
+        const launcher: LauncherType = new Launcher(
             options.configFile,
             { ...options, baseUrl: baseUrl }
         )

@@ -23,6 +23,8 @@ export function webdriverioSchematics(_options: any): Rule {
     return (tree: Tree, _context: SchematicContext) => {
         _options = { ..._options, __version__: getAngularVersion(tree) };
 
+        console.log('LOSS');
+
         return chain([
             updateDependencies(_options),
             _options.removeProtractor ? removeFiles() : noop(),
@@ -111,9 +113,35 @@ function removeFiles(): Rule {
 }
 
 function runWizard(): Rule {
-    return (tree: Tree): Observable<Tree> => {
-        return concat(handler({ yes: false, yarn: false }).then(() => tree))
-    }
+    return (tree: Tree, context: SchematicContext): Observable<Tree> => (
+        concat(handler({ yes: false, yarn: false })).pipe(
+            map(({ installedPackages }: {
+                success: boolean;
+                parsedAnswers: never;
+                installedPackages: string[];
+            }) => installedPackages),
+            concatMap((packageNames: string[]) => (
+                Promise.all(
+                    packageNames.map(
+                        (packageName: string) => getLatestNodeVersion(packageName)
+                    )
+                )
+            )),
+            map((packagesFromRegistry: NodePackage[]) => {
+                for (let packageFromRegistry of packagesFromRegistry) {
+                    const { name, version } = packageFromRegistry
+                    context.logger.debug(`Adding ${name}:${version} to ${NodeDependencyType.Dev}`)
+                    addPackageJsonDependency(tree, {
+                        type: NodeDependencyType.Dev,
+                        name,
+                        version,
+                    })
+                }
+
+                return tree
+            })
+        )
+    )
 }
 
 function modifyAngularJson(options: any): Rule {
@@ -158,7 +186,7 @@ function modifyAngularJson(options: any): Rule {
             context.logger.debug(`Adding webdriverio/tsconfig.json to angular.json-tslint config`);
             addWDIOTsConfig(tree, angularJsonVal, project);
 
-            context.logger.debug(`Adding cypress-run and cypress-open commands in angular.json`);
+            context.logger.debug(`Adding wdio-run command in angular.json`);
             const projectArchitectJson = angularJsonVal['projects'][project]['architect'];
             projectArchitectJson['wdio-run'] = wdioConf
             if (options.removeProtractor) {
