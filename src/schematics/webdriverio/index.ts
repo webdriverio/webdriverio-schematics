@@ -23,8 +23,6 @@ export function webdriverioSchematics(_options: any): Rule {
     return (tree: Tree, _context: SchematicContext) => {
         _options = { ..._options, __version__: getAngularVersion(tree) };
 
-        console.log('LOSS');
-
         return chain([
             updateDependencies(_options),
             _options.removeProtractor ? removeFiles() : noop(),
