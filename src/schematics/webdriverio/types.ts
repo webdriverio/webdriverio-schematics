@@ -24,4 +24,13 @@ export interface DeleteNodeDependency {
 export interface NodePackage {
     name: string;
     version: string;
-  }
+}
+
+export interface SchematicsOptions {
+    yes: boolean
+    yarn: boolean
+    noWizard?: boolean
+    noBuilder?: boolean
+    removeProtractor?: boolean
+    __version__: number
+}

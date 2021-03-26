@@ -17,6 +17,14 @@
       "description": "When true, it does not run the WebdriverIO setup wizard, requiring the user setup the framework by themselves",
       "type": "boolean"
     },
+    "yes": {
+      "description": "When true, it configures WebdriverIO with default settings.",
+      "type": "boolean"
+    },
+    "yarn": {
+      "description": "When true, it uses yarn rather than npm.",
+      "type": "boolean"
+    },
     "noBuilder": {
       "description": "When true, the angular.json file will not be modified to add WebdriverIO commands, requiring the user to run WebdriverIO from the command line independent of the Angular CLI",
       "type": "boolean"

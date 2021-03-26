@@ -5,7 +5,7 @@ import { Observable, of, concat } from 'rxjs'
 
 import { handler } from '@wdio/cli/build/commands/config'
 
-import { NodeDependencyType, NodePackage } from './types'
+import { NodeDependencyType, NodePackage, SchematicsOptions } from './types'
 import {
     getAngularVersion,
     removePackageJsonDependency,
@@ -19,14 +19,17 @@ import {
 
 // You don't have to export the function as default. You can also have more than one rule factory
 // per file.
-export function webdriverioSchematics(_options: any): Rule {
+export function webdriverioSchematics(_options: SchematicsOptions): Rule {
     return (tree: Tree, _context: SchematicContext) => {
-        _options = { ..._options, __version__: getAngularVersion(tree) };
+        _options = {
+            ..._options,
+            __version__: getAngularVersion(tree)
+        };
 
         return chain([
             updateDependencies(_options),
             _options.removeProtractor ? removeFiles() : noop(),
-            runWizard(),
+            runWizard(_options),
             !_options.noBuilder ? modifyAngularJson(_options) : noop(),
         ])(tree, _context);
     };
@@ -110,9 +113,9 @@ function removeFiles(): Rule {
     }
 }
 
-function runWizard(): Rule {
+function runWizard(_options: SchematicsOptions): Rule {
     return (tree: Tree, context: SchematicContext): Observable<Tree> => (
-        concat(handler({ yes: false, yarn: false })).pipe(
+        concat(handler(_options)).pipe(
             map(({ installedPackages }: {
                 success: boolean;
                 parsedAnswers: never;
