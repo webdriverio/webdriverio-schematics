@@ -18,7 +18,7 @@ This schematic will:
 Run as one command in an Angular CLI app directory. Note this will add the schematic as a dependency to your project.
 
 ```shell
-ng add @wdio/schematic
+ng add @wdio/schematics
 ```
 
 With the custom builder installed, you can run WebdriverIO with the following commands:
@@ -52,7 +52,7 @@ When adding WebdriverIO Schematics to your project you can invoke the following 
 For example to add a basic WebdriverIO setup without going through the configuration wizard, just run:
 
 ```sh
-$ ng add @wdio/schematic --yes
+$ ng add @wdio/schematics --yes
 ```
 
 Once WebdriverIO is added to your project you can apply the common [WDIO CLI options](https://webdriver.io/docs/clioptions) when triggering the test.
@@ -79,7 +79,7 @@ $ npm run link:sandbox
 
 ```bash
 $ cd sandbox
-$ npx ng add @wdio/schematic
+$ npx ng add @wdio/schematics
 ```
 
 ## E2E testing
