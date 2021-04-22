@@ -33,7 +33,7 @@ export function webdriverioSchematics(_options: SchematicsOptions): Rule {
         return chain([
             updateDependencies(_options),
             _options.removeProtractor ? removeFiles() : noop(),
-            _options.noWizard ? runWizard(_options) : noop(),
+            !_options.noWizard ? runWizard(_options) : noop(),
             !_options.noBuilder ? modifyAngularJson(_options) : noop(),
         ])(tree, _context);
     };
