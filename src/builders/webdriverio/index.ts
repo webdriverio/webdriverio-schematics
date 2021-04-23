@@ -73,6 +73,7 @@ export async function execute(
         baseUrl += '/';
     }
 
+    let result: BuilderOutput | undefined;
     try {
         if (!options.configFile) {
             const defaultConfigPath = await Promise.all([
@@ -97,7 +98,7 @@ export async function execute(
             { ...options, baseUrl: baseUrl }
         )
 
-        return launcher.run().then(
+        result = await launcher.run().then(
             (exitCode) => ({
                 success: exitCode === 0
             }),
@@ -107,7 +108,7 @@ export async function execute(
             })
         )
     } catch (err) {
-        return {
+        result = {
             error: err.message,
             success: false
         };
@@ -115,5 +116,9 @@ export async function execute(
         if (server) {
             await server.stop();
         }
+        if (!result) {
+            return { success: false };
+        }
+        return result;
     }
 }
