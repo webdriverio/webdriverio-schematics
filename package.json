@@ -2,7 +2,7 @@
   "name": "@wdio/schematics",
   "author": "Christian Bromann <christian@saucelabs.com>",
   "license": "MIT",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "WebdriverIO schematics for Angular CLI",
   "repository": {
     "type": "git",
