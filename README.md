@@ -5,7 +5,7 @@ WebdriverIO Angular Schematic [![Test](https://github.com/webdriverio/webdriveri
   <img alt="WebdriverIO Schematic Logo" src="/.github/assets/logo.png" width=300 />
 </p>
 
-Add [WebdriverIO](https://webdriverio.io) to an Angular CLI project
+Add [WebdriverIO](https://webdriver.io) to an Angular CLI project
 
 This schematic will:
 
