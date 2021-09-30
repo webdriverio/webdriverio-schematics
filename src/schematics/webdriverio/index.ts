@@ -159,7 +159,12 @@ function updateFiles(tree: Tree, context: SchematicContext) {
             JSON.stringify(TS_CONFIG, null, 4)
         )
 
-        const wdioConfigPath = path.join(process.cwd(), 'wdio.conf.js')
+        let wdioConfigPath = path.join(process.cwd(), 'wdio.conf.ts')
+
+        if (!fs.existsSync(wdioConfigPath)) {
+            wdioConfigPath = path.join(process.cwd(), 'wdio.conf.js')
+        }
+        
         const wdioConfig = fs.readFileSync(wdioConfigPath).toString()
         fs.writeFileSync(wdioConfigPath, (
             wdioConfig.slice(0, -4) + '\n' +
