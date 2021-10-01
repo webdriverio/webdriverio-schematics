@@ -3,10 +3,11 @@ import * as path from 'path'
 
 import { Rule, SchematicContext, SchematicsException, Tree, chain, noop } from '@angular-devkit/schematics';
 import { NodePackageInstallTask } from '@angular-devkit/schematics/tasks'
-import { map, concatMap } from 'rxjs/operators'
-import { Observable, of, concat } from 'rxjs'
+import { map, concatMap, switchMap } from 'rxjs/operators'
+import { Observable, of, concat, from } from 'rxjs'
 
 import { handler } from '@wdio/cli/build/commands/config'
+import { ParsedAnswers } from '@wdio/cli'
 
 import { TS_CONFIG } from './constants'
 import { NodeDependencyType, NodePackage, SchematicsOptions } from './types'
@@ -117,27 +118,22 @@ function removeFiles(): Rule {
     }
 }
 
+
 function runWizard(_options: SchematicsOptions): Rule {
     return (tree: Tree, context: SchematicContext): Observable<Tree> => (
         concat(handler(_options)).pipe(
-            map(({ installedPackages }: {
-                success: boolean;
-                parsedAnswers: never;
-                installedPackages: string[];
-            }) => installedPackages),
-            concatMap((packageNames: string[]) => (
-                Promise.all(
-                    packageNames.map(
-                        (packageName: string) => getLatestNodeVersion(packageName)
-                    )
+            switchMap(({ installedPackages = [], parsedAnswers }) => from(Promise.all(
+                installedPackages.map(
+                    (packageName: string) => getLatestNodeVersion(packageName)
                 )
+            )).pipe(
+                map(updateFiles(tree, context, parsedAnswers as ParsedAnswers))
             )),
-            map(updateFiles(tree, context))
         )
     )
 }
 
-function updateFiles(tree: Tree, context: SchematicContext) {
+function updateFiles(tree: Tree, context: SchematicContext, parsedAnswers: ParsedAnswers) {
     return (packagesFromRegistry: NodePackage[]) => {
         for (let packageFromRegistry of packagesFromRegistry) {
             const { name, version } = packageFromRegistry
@@ -154,24 +150,24 @@ function updateFiles(tree: Tree, context: SchematicContext) {
                 .map((pkg) => pkg.name)
                 .filter((pkg) => pkg.startsWith('@wdio'))
         )
+
+        const relative = path.relative(process.cwd(), parsedAnswers.destSpecRootPath);
+        const tsconfigDir = relative.split(path.sep)[0];
+        
         fs.writeFileSync(
-            path.join(process.cwd(), 'test', 'tsconfig.e2e.json'),
+            path.join(process.cwd(), tsconfigDir, 'tsconfig.e2e.json'),
             JSON.stringify(TS_CONFIG, null, 4)
         )
 
-        let wdioConfigPath = path.join(process.cwd(), 'wdio.conf.ts')
+        const wdioConfigPath = path.join(process.cwd(), `wdio.conf.${parsedAnswers.isUsingTypeScript ? 'ts': 'js'}`);
 
-        if (!fs.existsSync(wdioConfigPath)) {
-            wdioConfigPath = path.join(process.cwd(), 'wdio.conf.js')
-        }
-        
         const wdioConfig = fs.readFileSync(wdioConfigPath).toString()
         fs.writeFileSync(wdioConfigPath, (
             wdioConfig.slice(0, -4) + '\n' +
             '    autoCompileOpts: {\n' +
             '        tsNodeOpts: {\n' +
             '            transpileOnly: true,\n' +
-            '            project: __dirname + \'/test/tsconfig.e2e.json\'\n' +
+            '            project: __dirname + \'/' + tsconfigDir + '/tsconfig.e2e.json\'\n' +
             '        }\n' +
             '    }\n' +
             '}\n'
