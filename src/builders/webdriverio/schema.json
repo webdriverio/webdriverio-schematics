@@ -58,19 +58,31 @@
     },
     "reporters": {
       "description": "reporters to print out the results on stdout",
-      "type": "array"
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     },
     "suite": {
       "description": "overwrites the specs attribute and runs the defined suite",
-      "type": "array"
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     },
     "spec": {
       "description": "run only a certain spec file - overrides specs piped from stdin",
-      "type": "array"
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     },
     "exclude": {
       "description": "exclude certain spec file from the test run - overrides exclude piped from stdin",
-      "type": "array"
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     }
   },
   "additionalProperties": true
