@@ -3,6 +3,6 @@ export const TS_CONFIG = {
     compilerOptions: {
         module: 'commonjs',
         target: 'es5',
-        types: ['node', 'webdriverio/sync', 'expect-webdriverio']
+        types: ['node', 'webdriverio/async', 'expect-webdriverio']
     }
 }
