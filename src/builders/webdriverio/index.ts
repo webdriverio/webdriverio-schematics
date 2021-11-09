@@ -92,6 +92,10 @@ export async function execute(
 
             options.configFile = defaultConfigPath
         }
+        
+        if (options.tsconfigFile) {
+            options.autoCompileOpts = { tsNodeOpts: { project: options.tsconfigFile } }
+        }
 
         const launcher: LauncherType = new Launcher(
             options.configFile,
