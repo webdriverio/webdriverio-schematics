@@ -7,6 +7,10 @@
       "type": "string",
       "description": "Path to WebdriverIO config file"
     },
+    "tsconfigFile": {
+      "type": "string",
+      "description": "Path to Typescript config file"
+    },
     "devServerTarget": {
       "type": "string",
       "description": "Dev server target to run tests against."
