@@ -17,6 +17,7 @@ export default createBuilder<JsonObject & Options>(execute);
 
 interface Options extends RunCommandArguments {
     configFile: string
+    tsconfigFile: string
     devServerTarget: string
     watch: boolean
 }
