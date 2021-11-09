@@ -46,6 +46,9 @@
   },
   "schematics": "./src/schematics/collection.json",
   "builders": "./src/builders/builders.json",
+  "ng-add": {
+    "save": "devDependencies"
+  },
   "dependencies": {
     "@angular-devkit/architect": "^0.1202.0",
     "@angular-devkit/core": "^12.2.0",
