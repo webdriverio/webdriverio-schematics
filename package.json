@@ -51,7 +51,7 @@
   },
   "dependencies": {
     "@angular-devkit/architect": "^0.1202.0",
-    "@angular-devkit/core": "^12.2.0",
+    "@angular-devkit/core": "^13.3.2",
     "@angular-devkit/schematics": "^12.2.0",
     "@schematics/angular": "^12.2.0",
     "@wdio/cli": "^7.1.2",
