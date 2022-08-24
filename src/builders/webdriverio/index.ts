@@ -17,6 +17,7 @@ export default createBuilder<JsonObject & Options>(execute);
 
 interface Options extends RunCommandArguments {
     configFile: string
+    tsconfigFile: string
     devServerTarget: string
     watch: boolean
 }
@@ -91,6 +92,10 @@ export async function execute(
             }
 
             options.configFile = defaultConfigPath
+        }
+        
+        if (options.tsconfigFile) {
+            options.autoCompileOpts = { tsNodeOpts: { project: options.tsconfigFile } }
         }
 
         const launcher: LauncherType = new Launcher(

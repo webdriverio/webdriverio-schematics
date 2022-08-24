@@ -159,19 +159,6 @@ function updateFiles(tree: Tree, context: SchematicContext, parsedAnswers: Parse
             JSON.stringify(TS_CONFIG, null, 4)
         )
 
-        const wdioConfigPath = path.join(process.cwd(), `wdio.conf.${parsedAnswers.isUsingTypeScript ? 'ts': 'js'}`);
-
-        const wdioConfig = fs.readFileSync(wdioConfigPath).toString()
-        fs.writeFileSync(wdioConfigPath, (
-            wdioConfig.slice(0, -4) + '\n' +
-            '    autoCompileOpts: {\n' +
-            '        tsNodeOpts: {\n' +
-            '            transpileOnly: true,\n' +
-            '            project: __dirname + \'/' + tsconfigDir + '/tsconfig.e2e.json\'\n' +
-            '        }\n' +
-            '    }\n' +
-            '}\n'
-        ))
         return tree
     }
 }
