@@ -54,7 +54,7 @@
     "@angular-devkit/core": "^12.2.0",
     "@angular-devkit/schematics": "^14.2.8",
     "@schematics/angular": "^12.2.0",
-    "@wdio/cli": "^7.1.2",
+    "@wdio/cli": "^8.2.1",
     "typescript": "^4.2.3"
   },
   "devDependencies": {
