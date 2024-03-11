@@ -55,7 +55,7 @@
     "@angular-devkit/schematics": "^14.2.8",
     "@schematics/angular": "^12.2.0",
     "@wdio/cli": "^7.1.2",
-    "typescript": "^4.2.3"
+    "typescript": "^5.4.2"
   },
   "devDependencies": {
     "@types/jasmine": "~3.10.2",
