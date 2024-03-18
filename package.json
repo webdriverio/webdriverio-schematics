@@ -50,7 +50,7 @@
     "save": "devDependencies"
   },
   "dependencies": {
-    "@angular-devkit/architect": "^0.1202.0",
+    "@angular-devkit/architect": "^0.1703.0",
     "@angular-devkit/core": "^12.2.0",
     "@angular-devkit/schematics": "^14.2.8",
     "@schematics/angular": "^12.2.0",
