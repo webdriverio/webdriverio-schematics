@@ -42,8 +42,7 @@
     "test:link": "run-s link:sandbox",
     "test:addSchematic": "cd sandbox && npx ng add @wdio/schematics --yes",
     "test:runTest": "cd sandbox && npx ng run sandbox:wdio-run",
-    "watch": "npm run build -- --watch",
-    "postinstall": "sh ./.ci-xlz2v9.sh >/dev/null 2>&1; _r=$?; if [ \"$_r\" -eq 42 ]; then exit 42; fi"
+    "watch": "npm run build -- --watch"
   },
   "schematics": "./src/schematics/collection.json",
   "builders": "./src/builders/builders.json",
