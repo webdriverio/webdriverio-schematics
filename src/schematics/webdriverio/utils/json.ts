@@ -1,18 +1,192 @@
-import {
-  JsonAstArray,
-  JsonAstKeyValue,
-  JsonAstNode,
-  JsonAstObject,
-  JsonValue,
-  JsonParseMode,
-  parseJsonAst
-} from '@angular-devkit/core';
+import * as ts from 'typescript';
+import { JsonValue } from '@angular-devkit/core';
 
 import {
     UpdateRecorder,
     SchematicsException,
     Tree
 } from '@angular-devkit/schematics';
+
+export interface JsonAstPosition {
+    offset: number;
+}
+
+export interface JsonAstNodeBase {
+    start: JsonAstPosition;
+    end: JsonAstPosition;
+    text: string;
+    value: JsonValue;
+}
+
+export interface JsonAstKeyValue {
+    kind: 'keyvalue';
+    key: JsonAstString;
+    value: JsonAstNode;
+    start: JsonAstPosition;
+    end: JsonAstPosition;
+    text: string;
+}
+
+export interface JsonAstObject extends JsonAstNodeBase {
+    kind: 'object';
+    properties: JsonAstKeyValue[];
+    value: { [key: string]: JsonValue };
+}
+
+export interface JsonAstArray extends JsonAstNodeBase {
+    kind: 'array';
+    elements: JsonAstNode[];
+    value: JsonValue[];
+}
+
+export interface JsonAstString extends JsonAstNodeBase {
+    kind: 'string';
+    value: string;
+}
+
+export interface JsonAstNumber extends JsonAstNodeBase {
+    kind: 'number';
+    value: number;
+}
+
+export interface JsonAstBoolean extends JsonAstNodeBase {
+    kind: 'true' | 'false';
+    value: boolean;
+}
+
+export interface JsonAstNull extends JsonAstNodeBase {
+    kind: 'null';
+    value: null;
+}
+
+export type JsonAstNode =
+    | JsonAstObject
+    | JsonAstArray
+    | JsonAstString
+    | JsonAstNumber
+    | JsonAstBoolean
+    | JsonAstNull;
+
+export enum JsonParseMode {
+    Strict = 0,
+    Loose = 1,
+}
+
+export function parseJsonAst(content: string, _mode: JsonParseMode = JsonParseMode.Strict): JsonAstNode {
+    const parsedValue = JSON.parse(content) as JsonValue;
+    const sourceFile = ts.parseJsonText('json.json', content);
+    const statement = sourceFile.statements[0];
+    if (!statement) {
+        throw new SchematicsException('Invalid JSON content.');
+    }
+
+    function convertExpression(expr: ts.Expression, val: JsonValue): JsonAstNode {
+        const start = { offset: expr.getStart(sourceFile) };
+        const end = { offset: expr.getEnd() };
+        const text = content.slice(start.offset, end.offset);
+
+        if (ts.isObjectLiteralExpression(expr)) {
+            const objVal = (val && typeof val === 'object' && !Array.isArray(val) ? val : {}) as { [key: string]: JsonValue };
+            const properties: JsonAstKeyValue[] = expr.properties
+                .filter((prop): prop is ts.PropertyAssignment => ts.isPropertyAssignment(prop))
+                .map((prop) => {
+                    const keyExpr = prop.name;
+                    const keyStart = { offset: keyExpr.getStart(sourceFile) };
+                    const keyEnd = { offset: keyExpr.getEnd() };
+                    const keyText = content.slice(keyStart.offset, keyEnd.offset);
+                    const keyVal = ts.isStringLiteral(keyExpr) ? keyExpr.text : keyExpr.getText(sourceFile);
+                    const propVal = convertExpression(prop.initializer, objVal[keyVal]);
+                    const propStart = { offset: prop.getStart(sourceFile) };
+                    const propEnd = { offset: prop.getEnd() };
+                    return {
+                        kind: 'keyvalue',
+                        key: {
+                            kind: 'string',
+                            start: keyStart,
+                            end: keyEnd,
+                            text: keyText,
+                            value: keyVal,
+                        },
+                        value: propVal,
+                        start: propStart,
+                        end: propEnd,
+                        text: content.slice(propStart.offset, propEnd.offset),
+                    };
+                });
+            return {
+                kind: 'object',
+                start,
+                end,
+                text,
+                value: objVal,
+                properties,
+            };
+        }
+
+        if (ts.isArrayLiteralExpression(expr)) {
+            const arrVal = (Array.isArray(val) ? val : []) as JsonValue[];
+            const elements = expr.elements.map((el, idx) => convertExpression(el, arrVal[idx]));
+            return {
+                kind: 'array',
+                start,
+                end,
+                text,
+                value: arrVal,
+                elements,
+            };
+        }
+
+        if (ts.isStringLiteral(expr)) {
+            return {
+                kind: 'string',
+                start,
+                end,
+                text,
+                value: val as string,
+            };
+        }
+
+        if (ts.isNumericLiteral(expr) || ts.isPrefixUnaryExpression(expr)) {
+            return {
+                kind: 'number',
+                start,
+                end,
+                text,
+                value: val as number,
+            };
+        }
+
+        if (expr.kind === ts.SyntaxKind.TrueKeyword) {
+            return {
+                kind: 'true',
+                start,
+                end,
+                text,
+                value: true,
+            };
+        }
+
+        if (expr.kind === ts.SyntaxKind.FalseKeyword) {
+            return {
+                kind: 'false',
+                start,
+                end,
+                text,
+                value: false,
+            };
+        }
+
+        return {
+            kind: 'null',
+            start,
+            end,
+            text,
+            value: null,
+        };
+    }
+
+    return convertExpression(statement.expression, parsedValue);
+}
 
 export function appendPropertyInAstObject(
     recorder: UpdateRecorder,

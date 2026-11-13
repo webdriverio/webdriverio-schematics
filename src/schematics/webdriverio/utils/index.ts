@@ -6,11 +6,6 @@ import {
 } from '@angular-devkit/schematics'
 
 import {
-    JsonAstObject,
-    JsonAstNode
-} from '@angular-devkit/core'
-
-import {
     NodeDependencyType,
     NodeDependency,
     pkgJson,
@@ -19,6 +14,8 @@ import {
 } from '../types'
 
 import {
+    JsonAstObject,
+    JsonAstNode,
     parseJsonAtPath,
     insertPropertyInAstObjectInOrder,
     appendPropertyInAstObject
