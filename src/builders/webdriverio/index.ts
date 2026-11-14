@@ -21,11 +21,46 @@ interface Options extends RunCommandArguments {
     watch: boolean
 }
 
+const dynamicImport = new Function('specifier', 'return import(specifier)') as (specifier: string) => Promise<any>
+
+export async function loadLauncher(cwd = process.cwd()): Promise<new (configFilePath: string, args?: any) => LauncherType> {
+    const cliPath = path.resolve(cwd, 'node_modules', '@wdio', 'cli')
+    let cliModule: any
+    try {
+        cliModule = require(cliPath)
+    } catch (err: any) {
+        const pkgJsonPath = path.join(cliPath, 'package.json')
+        if (err && (err.code === 'ERR_REQUIRE_ESM' || err.code === 'MODULE_NOT_FOUND') && fs.existsSync(pkgJsonPath)) {
+            const pkgJson = JSON.parse(await fs.promises.readFile(pkgJsonPath, 'utf-8'))
+            const exportsField = pkgJson.exports
+            const entry = (
+                typeof exportsField === 'string'
+                    ? exportsField
+                    : exportsField?.['.']?.import ||
+                      exportsField?.['.']?.default ||
+                      (typeof exportsField?.['.'] === 'string' ? exportsField['.'] : undefined) ||
+                      pkgJson.main ||
+                      'build/index.js'
+            )
+            const entryPath = path.resolve(cliPath, entry)
+            cliModule = await dynamicImport(url.pathToFileURL(entryPath).href)
+        } else {
+            throw err
+        }
+    }
+
+    const Launcher = cliModule?.Launcher || cliModule?.default?.Launcher || cliModule?.default
+    if (typeof Launcher !== 'function') {
+        throw new Error('Could not resolve WebdriverIO Launcher from @wdio/cli')
+    }
+    return Launcher
+}
+
 export async function execute(
     options: Options,
     context: BuilderContext,
 ): Promise<BuilderOutput> {
-    const Launcher = require(path.join(process.cwd(), 'node_modules', '@wdio', 'cli')).default
+    const Launcher = await loadLauncher()
 
     // ensure that only one of these options is used
     if (options.devServerTarget && options.baseUrl) {
