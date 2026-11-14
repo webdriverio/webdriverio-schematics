@@ -3,7 +3,8 @@
   "schematics": {
     "ng-add": {
       "description": "Adds WebdriverIO to an existing Angular CLI project.",
-      "factory": "./webdriverio/index#webdriverioSchematics"
+      "factory": "./webdriverio/index#webdriverioSchematics",
+      "schema": "./webdriverio/schema.json"
     }
   }
 }

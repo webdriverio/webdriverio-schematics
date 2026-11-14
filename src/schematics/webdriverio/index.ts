@@ -148,30 +148,48 @@ function updateFiles(tree: Tree, context: SchematicContext, parsedAnswers: Parse
         TS_CONFIG.compilerOptions.types.push(
             ...packagesFromRegistry
                 .map((pkg) => pkg.name)
-                .filter((pkg) => pkg.startsWith('@wdio'))
+                .filter((pkg) => pkg.startsWith('@wdio') && !pkg.endsWith('-reporter') && !pkg.endsWith('-runner'))
         )
 
         const relative = path.relative(process.cwd(), parsedAnswers.destSpecRootPath);
         const tsconfigDir = relative.split(path.sep)[0];
+        const tsconfigDirPath = path.join(process.cwd(), tsconfigDir);
+        if (!fs.existsSync(tsconfigDirPath)) {
+            fs.mkdirSync(tsconfigDirPath, { recursive: true });
+        }
         
         fs.writeFileSync(
-            path.join(process.cwd(), tsconfigDir, 'tsconfig.e2e.json'),
+            path.join(tsconfigDirPath, 'tsconfig.e2e.json'),
             JSON.stringify(TS_CONFIG, null, 4)
         )
 
-        const wdioConfigPath = path.join(process.cwd(), `wdio.conf.${parsedAnswers.isUsingTypeScript ? 'ts': 'js'}`);
+        const preferredConfigPath = path.join(process.cwd(), `wdio.conf.${parsedAnswers.isUsingTypeScript ? 'ts': 'js'}`);
+        const fallbackConfigPath = path.join(process.cwd(), `wdio.conf.${parsedAnswers.isUsingTypeScript ? 'js': 'ts'}`);
+        const wdioConfigPath = fs.existsSync(preferredConfigPath) ? preferredConfigPath : fallbackConfigPath;
 
-        const wdioConfig = fs.readFileSync(wdioConfigPath).toString()
-        fs.writeFileSync(wdioConfigPath, (
-            wdioConfig.slice(0, -4) + '\n' +
-            '    autoCompileOpts: {\n' +
-            '        tsNodeOpts: {\n' +
-            '            transpileOnly: true,\n' +
-            '            project: __dirname + \'/' + tsconfigDir + '/tsconfig.e2e.json\'\n' +
-            '        }\n' +
-            '    }\n' +
-            '}\n'
-        ))
+        if (fs.existsSync(wdioConfigPath)) {
+            const wdioConfig = fs.readFileSync(wdioConfigPath).toString()
+            const projectTsConfigPath = `./${tsconfigDir}/tsconfig.e2e.json`
+            if (wdioConfig.includes('autoCompileOpts')) {
+                fs.writeFileSync(
+                    wdioConfigPath,
+                    wdioConfig.replace(/project:\s*['"][^'"]+['"]/, `project: '${projectTsConfigPath}'`)
+                )
+            } else {
+                const trimmedConfig = wdioConfig.trimEnd().replace(/};\s*$/, '').replace(/}\s*$/, '').trimEnd()
+                const needsComma = !trimmedConfig.endsWith(',') && !trimmedConfig.endsWith('{')
+                fs.writeFileSync(wdioConfigPath, (
+                    trimmedConfig + (needsComma ? ',' : '') + '\n' +
+                    '    autoCompileOpts: {\n' +
+                    '        tsNodeOpts: {\n' +
+                    '            transpileOnly: true,\n' +
+                    '            project: __dirname + \'/' + tsconfigDir + '/tsconfig.e2e.json\'\n' +
+                    '        }\n' +
+                    '    }\n' +
+                    '}\n'
+                ))
+            }
+        }
         return tree
     }
 }
@@ -189,6 +207,10 @@ function modifyAngularJson(options: any): Rule {
             throw new SchematicsException('projects in angular.json is not defined');
         }
 
+        const configFileName = fs.existsSync(path.join(process.cwd(), 'wdio.conf.ts'))
+            ? 'wdio.conf.ts'
+            : 'wdio.conf.js';
+
         Object.keys(projects).forEach((project) => {
             const wdioConf = {
                 builder: '@wdio/schematics:wdio',
@@ -203,7 +225,7 @@ function modifyAngularJson(options: any): Rule {
             }
 
             const configFile = !!projects[project].root
-                ? `${projects[project].root}/wdio.conf.js`
+                ? `${projects[project].root}/${configFileName}`
                 : null
 
             if (configFile) {

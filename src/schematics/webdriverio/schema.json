@@ -7,10 +7,7 @@
     "removeProtractor": {
       "description": "When true, the protractor dependency and e2e directory will be removed from the project",
       "type": "boolean",
-      "$default": {
-        "$source": "argv",
-        "index": 0
-      },
+      "default": false,
       "x-prompt": "Would you like to remove Protractor from the project?"
     },
     "noWizard": {
